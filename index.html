@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Well Pump Generator Planner: size a generator for your well pump, furnace and fridge</title>
+<meta name="description" content="Free planner: add your well pump, furnace, fridge and other loads, see running watts, the start-up surge, and a start order that lets a smaller generator cope.">
+<style>
+:root{--ink:#1d2a24;--paper:#f6f3ea;--card:#fffdf7;--accent:#1f6f50;--warn:#a4431d;--line:#d9d2bf}
+*{box-sizing:border-box}body{margin:0;font:16px/1.5 Georgia,"Iowan Old Style",serif;color:var(--ink);background:var(--paper)}
+header{background:var(--accent);color:#fff;padding:22px 16px}header h1{margin:0;font-size:1.6rem}header p{margin:6px 0 0;opacity:.9}
+main{max-width:900px;margin:0 auto;padding:16px}
+.disclosure{background:#fff4d6;border:1px solid #e2c46b;padding:10px 12px;border-radius:6px;font-size:.92rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;margin:14px 0}
+table{width:100%;border-collapse:collapse;font-family:system-ui,sans-serif;font-size:.95rem}
+th,td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+td input[type=number]{width:5.5em;padding:6px;font-size:1rem}td input[type=checkbox]{width:22px;height:22px}
+.out{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;font-family:system-ui,sans-serif}
+.stat{background:#eef5f0;border-radius:8px;padding:10px}.stat b{display:block;font-size:1.5rem;color:var(--accent)}
+.warn{color:var(--warn);font-family:system-ui,sans-serif}
+button{background:var(--accent);color:#fff;border:0;border-radius:6px;padding:10px 14px;font-size:1rem;cursor:pointer}
+ol li{margin:4px 0}.nm{font-family:system-ui,sans-serif;display:block;min-width:6em}footer{font-size:.85rem;padding:16px;max-width:900px;margin:0 auto;color:#555}
+@media (max-width:560px){th:nth-child(3),td:nth-child(3){display:none}header h1{font-size:1.3rem}}
+</style>
+</head>
+<body>
+<header><h1>Well Pump Generator Planner</h1><p>On a well, the pump's start-up surge decides your generator size. Add what you need to run during an outage and see the numbers.</p></header>
+<main>
+<p class="disclosure" id="disclosure"><strong>Disclosure:</strong> This site has no affiliate links right now. Links to other sites are plain, non-affiliate links. If affiliate links are added later, they will be marked and this notice will be updated.</p>
+
+<section class="card">
+<h2>1. What do you need to run at once?</h2>
+<p>Default numbers are typical planning figures. <strong>Your nameplate wins:</strong> running watts ≈ volts × running amps. A well pump's starting draw is often 2–3× its running draw.</p>
+<table id="loads"><thead><tr><th>Use</th><th>Load</th><th>Type</th><th>Running W</th><th>Starting W</th></tr></thead><tbody></tbody></table>
+<p><button id="add">+ Add a custom load</button></p>
+</section>
+
+<section class="card" aria-live="polite">
+<h2>2. Your numbers</h2>
+<div class="out">
+<div class="stat">Running total<b id="run">0 W</b></div>
+<div class="stat">Peak if you stagger starts<b id="peak">0 W</b></div>
+<div class="stat">Peak if everything starts together<b id="worst">0 W</b></div>
+<div class="stat">Look for a generator rated at least<b id="rec">0 W</b><span id="recsub"></span></div>
+</div>
+<p id="notes" class="warn"></p>
+</section>
+
+<section class="card">
+<h2>3. Start order after the power goes out</h2>
+<p>Motors only surge for about a second. Start them one at a time, biggest surge first, and a smaller generator can carry the same house.</p>
+<ol id="order"></ol>
+</section>
+
+<section class="card">
+<h2>How the math works</h2>
+<ul>
+<li><b>Running total</b>: the sum of running watts for everything on at once.</li>
+<li><b>Staggered peak</b>: running total plus the largest single surge, meaning starting minus running watts for the biggest motor.</li>
+<li><b>Recommended rating</b>: running watts at least running total ÷ 0.8, so the generator stays under about 80% load for hours, and surge or starting watts at least the staggered peak.</li>
+<li>Most submersible well pumps are <b>240 V</b>. You need a generator with a 240 V outlet and a transfer switch or interlock installed by an electrician. Never backfeed through a dryer outlet.</li>
+<li>Soft-start or constant-pressure drives (for example, variable-speed submersible controllers) cut the surge. If you have one, set starting W close to running W.</li>
+</ul>
+<p>Further reading (non-affiliate links): <a href="https://gensize.com/generator-wattage-chart/" rel="nofollow">GenSize wattage chart</a> · <a href="https://www.reddit.com/r/Generator/comments/18sbc95/help_sizing_generator_well_pump/" rel="nofollow">r/Generator: sizing for a 1.5 HP well pump</a></p>
+</section>
+</main>
+<footer>Planning tool only, not electrical advice. Check nameplates, and have a licensed electrician connect any generator to your home's wiring. © 2026</footer>
+<script>
+const D=[
+ ["Well pump, 1/2 HP",1000,2100,true,true],["Well pump, 1 HP",2000,4000,true,false],["Well pump, 1.5 HP (rough estimate, check nameplate)",2600,6000,true,false],
+ ["Refrigerator",700,2200,true,true],["Chest/upright freezer",500,1500,true,false],["Gas furnace blower",800,2350,true,true],
+ ["Sump pump, 1/2 HP",1050,2150,true,false],["Lights (10 LED)",100,100,false,true],["Wi-Fi + modem",25,25,false,true],
+ ["Phone/laptop chargers",75,75,false,false],["Microwave",1400,1400,false,false],["Window AC 10k BTU",1200,2400,true,false],
+ ["Electric water heater",4500,4500,false,false]];
+const tb=document.querySelector('#loads tbody');
+function row(n,r,s,m,on){const tr=document.createElement('tr');tr.innerHTML=`<td><input type=checkbox ${on?'checked':''} aria-label="use ${n}"></td><td><span class="nm" contenteditable="true" aria-label="load name">${n}</span></td><td>${m?'motor':'no surge'}</td><td><input type=number min=0 value=${r} aria-label="running watts"></td><td><input type=number min=0 value=${s} aria-label="starting watts"></td>`;tb.appendChild(tr)}
+D.forEach(d=>row(d[0],d[1],d[2],d[3],d[4]));
+document.getElementById('add').onclick=()=>{row("Custom load",500,500,false,true);calc()};
+const f=n=>Math.round(n).toLocaleString('en-US')+' W';
+function calc(){const L=[...tb.rows].filter(t=>t.cells[0].firstChild.checked).map(t=>{const i=t.querySelectorAll('input');const r=+i[1].value||0,s=Math.max(+i[2].value||0,r);return{n:t.querySelector('.nm').textContent.trim(),r,s,g:s-r}});
+ const run=L.reduce((a,x)=>a+x.r,0),gmax=L.reduce((a,x)=>Math.max(a,x.g),0),worst=L.reduce((a,x)=>a+x.s,0),peak=run+gmax;
+ const recRun=Math.ceil(run/0.8/100)*100;
+ document.getElementById('run').textContent=f(run);document.getElementById('peak').textContent=f(peak);document.getElementById('worst').textContent=f(worst);
+ document.getElementById('rec').textContent=f(recRun)+' running';document.getElementById('recsub').textContent=' and '+f(Math.ceil(peak/100)*100)+' starting/surge';
+ const n=[];if(L.some(x=>/well pump/i.test(x.n)))n.push('Well pump selected: you need a 240 V outlet on the generator (most submersibles), and a transfer switch or interlock.');
+ if(L.filter(x=>/well pump/i.test(x.n)).length>1)n.push('More than one well pump is checked. Most homes have one.');
+ document.getElementById('notes').textContent=n.join(' ');
+ const o=document.getElementById('order');o.innerHTML='';const mot=L.filter(x=>x.g>0).sort((a,b)=>b.g-a.g),rest=L.filter(x=>x.g<=0);
+ mot.forEach(x=>{const li=document.createElement('li');li.textContent=`${x.n}: wait about 10 s after it starts (surge of about ${f(x.g)} on top of running loads)`;o.appendChild(li)});
+ if(rest.length){const li=document.createElement('li');li.textContent='Then: '+rest.map(x=>x.n).join(', ');o.appendChild(li)}
+ if(!L.length)o.innerHTML='<li>Check at least one load above.</li>'}
+tb.addEventListener('input',calc);calc();
+</script>
+</body>
+</html>
