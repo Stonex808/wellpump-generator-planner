@@ -26,7 +26,7 @@ ol li{margin:4px 0}.nm{font-family:system-ui,sans-serif;display:block;min-width:
 <body>
 <header><h1>Well Pump Generator Planner</h1><p>On a well, the pump's start-up surge decides your generator size. Add what you need to run during an outage and see the numbers.</p></header>
 <main>
-<p class="disclosure" id="disclosure"><strong>Disclosure:</strong> This site has no affiliate links right now. Links to other sites are plain, non-affiliate links. If affiliate links are added later, they will be marked and this notice will be updated.</p>
+<p class="disclosure" id="disclosure"><strong>Disclosure:</strong> As an Amazon Associate I earn from qualifying purchases. Links to Amazon in the buy section below are affiliate links. Other links, including the EcoFlow mention, are plain, non-affiliate links.</p>
 
 <section class="card">
 <h2>1. What do you need to run at once?</h2>
@@ -46,6 +46,13 @@ ol li{margin:4px 0}.nm{font-family:system-ui,sans-serif;display:block;min-width:
 <p id="notes" class="warn"></p>
 </section>
 
+<section class="card" id="buy">
+<h2>What to buy for your size</h2>
+<p>The wattage band below follows the recommendation above. Amazon links are affiliate links (sponsored); no prices or ratings are shown because they change. Compare the running and starting ratings on the listing against your numbers before you buy.</p>
+<ul id="buylist"></ul>
+<p style="font-size:.9rem">A transfer switch or interlock kit should be chosen with a licensed electrician so it matches your panel; never backfeed a generator through a dryer outlet.</p>
+</section>
+
 <section class="card">
 <h2>3. Start order after the power goes out</h2>
 <p>Motors only surge for about a second. Start them one at a time, biggest surge first, and a smaller generator can carry the same house.</p>
@@ -61,7 +68,7 @@ ol li{margin:4px 0}.nm{font-family:system-ui,sans-serif;display:block;min-width:
 <li>Most submersible well pumps are <b>240 V</b>. You need a generator with a 240 V outlet and a transfer switch or interlock installed by an electrician. Never backfeed through a dryer outlet.</li>
 <li>Soft-start or constant-pressure drives (for example, variable-speed submersible controllers) cut the surge. If you have one, set starting W close to running W.</li>
 </ul>
-<p>Further reading (non-affiliate links): <a href="https://gensize.com/generator-wattage-chart/" rel="nofollow">GenSize wattage chart</a> · <a href="https://www.reddit.com/r/Generator/comments/18sbc95/help_sizing_generator_well_pump/" rel="nofollow">r/Generator: sizing for a 1.5 HP well pump</a></p>
+<p>Further reading (non-affiliate links): <a href="https://us.ecoflow.com/pages/affiliate-program" rel="nofollow">EcoFlow portable power stations</a> · <a href="https://gensize.com/generator-wattage-chart/" rel="nofollow">GenSize wattage chart</a> · <a href="https://www.reddit.com/r/Generator/comments/18sbc95/help_sizing_generator_well_pump/" rel="nofollow">r/Generator: sizing for a 1.5 HP well pump</a></p>
 </section>
 </main>
 <footer>Planning tool only, not electrical advice. Check nameplates, and have a licensed electrician connect any generator to your home's wiring. © 2026</footer>
@@ -88,7 +95,16 @@ function calc(){const L=[...tb.rows].filter(t=>t.cells[0].firstChild.checked).ma
  const o=document.getElementById('order');o.innerHTML='';const mot=L.filter(x=>x.g>0).sort((a,b)=>b.g-a.g),rest=L.filter(x=>x.g<=0);
  mot.forEach(x=>{const li=document.createElement('li');li.textContent=`${x.n}: wait about 10 s after it starts (surge of about ${f(x.g)} on top of running loads)`;o.appendChild(li)});
  if(rest.length){const li=document.createElement('li');li.textContent='Then: '+rest.map(x=>x.n).join(', ');o.appendChild(li)}
- if(!L.length)o.innerHTML='<li>Check at least one load above.</li>'}
+ if(!L.length)o.innerHTML='<li>Check at least one load above.</li>';
+ buy(recRun,Math.ceil(peak/100)*100,L.some(x=>/well pump|240/i.test(x.n)))}
+const az=(label,q)=>{const a=document.createElement('a');a.href='https://www.amazon.com/s?k='+encodeURIComponent(q)+'&tag=wellpumpplann-20';a.textContent=label;a.target='_blank';a.rel='sponsored nofollow noopener';const li=document.createElement('li');li.appendChild(a);li.insertAdjacentHTML('beforeend',' <span style="font-size:.8rem">(Amazon, affiliate)</span>');return li};
+function band(x){return (Math.floor(x/500)*500).toLocaleString('en-US')+' to '+(Math.ceil(x/500)*500).toLocaleString('en-US')}
+function buy(r,p,pump){const ul=document.getElementById('buylist');ul.innerHTML='';
+ ul.appendChild(az('Portable generators around '+band(r)+' running watts (peak '+band(p)+'):',r+' watt portable generator '+p+' watt peak'));
+ ul.appendChild(az('Inverter generators around '+band(r)+' running watts:',r+' watt inverter generator'));
+ ul.appendChild(az('Generator transfer switch or interlock kit'+ (pump?' (240 V, needed for a well pump):':':'),pump?'240v generator transfer switch interlock kit':'generator interlock kit'));
+ ul.appendChild(az('Heavy-duty generator cord'+(pump?', 30 A 240 V:':' , 20 A:'),pump?'30 amp generator power cord 250v':'heavy duty outdoor extension cord generator'));
+ ul.appendChild(az('Battery CO detector for the house:', 'battery carbon monoxide detector'))}
 tb.addEventListener('input',calc);calc();
 </script>
 </body>
